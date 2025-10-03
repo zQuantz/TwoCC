@@ -1,0 +1,22 @@
+Algorithmic Trading System Overview
+
+This document provides a complete overview of a proposed algorithmic trading system. The system will be built in Python, designed using object-oriented principles and using the best programming practices. It should follow the clean coding principles (readable, maintainable, single responsibility, …).
+
+The system will have the following pillars. An additional document with complete specifications will be provided for each pillar.
+
+Pillars
+
+1.  	Data Manager – Allows the downloading, transforming, storing and accessing of market data from various sources.
+
+2.  	TradingStrategy – Allows to define the behavior of a strategy through entry rules and exit rules.
+
+3.  	Book – Allows the tracking of live and previously held positions, cash accounts and transaction costs.
+
+4.  	Backtester – Allows for the historical replay of a trading strategy and the building of a book.
+
+5.  	BookAnalyzer – Generates standardized reporting on several metrics, charts and interactive tools to understand the performance of a book.
+
+6.  	LiveSystem – Leverages the Data Manager, Trading Strategy and Book to “execute” trades in real time.
+
+The end goal of this project is to have a tool that would allow for the evaluation of a trading strategy’s performance, and, upon satisfactory performance, launch said strategy in a live system
+
