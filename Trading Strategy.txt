@@ -1,0 +1,107 @@
+# Project Documentation: Trading Strategy Component
+
+## Overview
+A **Trading Strategy** is a component responsible for analyzing market data and generating trade suggestions. It acts as a signal generator that proposes trades to the Risk Manager for approval and execution.
+
+## Core Functionality
+
+### Primary Interface
+Each Trading Strategy must expose a single method:
+
+**`get_suggested_trades(time_period, symbol)`**
+
+**Parameters:**
+- `time_period` (datetime/timestamp) - The current time point for analysis
+- `symbol` (string) - The ticker symbol to analyze
+
+**Returns:**
+- Collection of suggested Trade objects (or empty if no signals)
+- Each suggestion should include: action (BUY/SELL), quantity, reasoning/signal strength
+
+**Purpose:**
+- Analyzes market conditions at the given time period
+- Generates trade recommendations based on strategy logic
+- Passes suggestions to Risk Manager for validation
+
+## Data Access Requirements
+
+### Data Manager Integration
+Trading Strategies require access to the Data Manager to retrieve:
+
+**Primary Data:**
+- Historical price data for the target symbol
+- Volume data
+- Any other relevant market data for the symbol
+
+**Auxiliary Data:**
+- Market data for **any other symbols** in the dataset
+- Comparative/relative data (sector indices, correlated assets, etc.)
+- Broader market indicators
+
+**Key Point:** Strategies may use multi-asset data for decision-making (e.g., comparing a stock to its sector index, using market breadth indicators, etc.)
+
+## CRITICAL REQUIREMENT: No Look-Ahead Bias
+
+### Time-Point Awareness
+**All strategies must respect temporal boundaries and never use future information.**
+
+### Implementation Requirements
+
+**In Live Trading:**
+- Only use data available up to the current `time_period`
+- This is naturally enforced since future data doesn't exist yet
+
+**In Backtesting/Historical Replay:**
+- **CRITICAL**: Strategy must only access data where `data_timestamp <= time_period`
+- Data Manager must enforce this constraint
+- No "peeking" at future prices, volumes, or any market data
+- Must simulate real-time conditions exactly
+
+### Examples of Look-Ahead Bias to Avoid
+❌ **Wrong**: Using end-of-day closing price to make a decision at market open
+❌ **Wrong**: Using tomorrow's high/low to set today's stop loss
+❌ **Wrong**: Accessing data with timestamps after `time_period`
+
+✅ **Correct**: Using only data available up to and including `time_period`
+✅ **Correct**: Using yesterday's close to make today's decision
+✅ **Correct**: Properly lagged indicators and signals
+
+## Architecture Notes
+
+### Strategy Isolation
+- Each Trading Strategy operates independently
+- Multiple strategies can analyze the same symbol simultaneously
+- Strategies don't need to know about each other or the Risk Manager's decisions
+
+### Data Flow
+```
+Data Manager → Trading Strategy → Risk Manager
+     ↓              ↓                    ↓
+ (provides    (analyzes &         (validates &
+  market        suggests)           executes)
+  data)
+```
+
+### Stateless Design Recommendation
+- Consider making strategies stateless where possible
+- State should be derived from historical data, not internally cached
+- This ensures backtesting and live trading behave identically
+
+## Implementation Checklist
+
+1. **Interface**: Implement `get_suggested_trades(time_period, symbol)` method
+2. **Data Access**: Integrate with Data Manager for historical data retrieval
+3. **Time Constraint**: Ensure all data queries respect `time_period` as maximum timestamp
+4. **Strategy Logic**: Implement signal generation algorithm
+5. **Output Format**: Return standardized trade suggestion objects
+6. **Testing**: Verify no look-ahead bias in backtesting mode
+7. **Documentation**: Document which data sources and timeframes the strategy uses
+
+## Key Requirements Summary
+
+1. **Single Method Interface**: `get_suggested_trades(time_period, symbol)`
+2. **Data Manager Dependency**: Must access market data through Data Manager
+3. **Multi-Asset Capability**: Can use data from any symbol, not just the target
+4. **Temporal Integrity**: Absolutely no future data usage
+5. **Suggestion Only**: Strategies propose, Risk Manager decides
+6. **Backtest Compatible**: Must work identically in live and historical modes

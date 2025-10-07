@@ -1,0 +1,100 @@
+Project Documentation: Trading Book System
+Overview
+A Book is a centralized portfolio management system that tracks all trading activity and maintains the current state of holdings.
+Core Functionality
+1. Trade Tracking
+
+Records every trade execution with complete details
+Maintains historical record of all transactions
+Enables portfolio state reconstruction at any point in time
+Tracks strategy attribution for every trade action
+
+2. Position Management
+
+Tracks open positions for each ticker symbol
+Determines whether a symbol currently has an active trade
+Maintains real-time portfolio composition
+
+3. Strategy Attribution
+
+Records which strategy generated each entry signal
+Records which strategy generated each exit signal
+Enables performance analysis by strategy
+Provides audit trail for automated trading decisions
+
+Data Structure
+Book Object
+The Book contains a collection of Trade objects with the following requirements:
+Required Components:
+
+Collection/array of Trade objects
+Index or lookup mechanism by ticker symbol
+Current position state for each ticker
+
+Trade Object
+Each Trade must capture:
+Essential Fields:
+
+symbol (string) - Ticker identifier
+action (enum) - Type of trade (BUY, SELL, CLOSE, etc.)
+quantity (number) - Number of units traded
+timestamp (datetime) - When the trade was executed
+price (number) - Execution price per unit
+strategy_id (string) - Identifier of the strategy that generated this signal
+strategy_name (string) - Human-readable name of the strategy (optional but recommended)
+
+Additional Fields for Analysis:
+Include any metrics necessary for:
+
+Portfolio performance calculation
+Backtesting analysis
+Risk assessment
+P&L computation
+Strategy performance attribution
+
+Examples may include:
+
+Trade costs/fees
+Order type
+Position sizing rationale
+Entry/exit signals
+Strategy parameters at time of execution
+Signal strength/confidence (if applicable)
+
+Strategy Attribution Details
+Entry Signals
+
+Each position opening trade must record which strategy triggered the entry
+This enables analysis of which strategies are most profitable at identifying opportunities
+
+Exit Signals
+
+Each position closing trade must record which strategy triggered the exit
+Exits may be triggered by different strategies than entries (e.g., entry by momentum strategy, exit by risk management strategy)
+This enables understanding of optimal exit strategies
+
+Use Cases
+Strategy attribution enables:
+
+Performance by Strategy: Calculate P&L attributed to each strategy
+Strategy Effectiveness: Identify which strategies have highest win rates
+Debugging: Understand why automated trades were executed
+Optimization: Determine which strategy combinations work best
+Audit Trail: Complete transparency for automated decision-making
+
+Key Requirements
+
+Query Capability: Must be able to quickly determine if a ticker has an open position
+Historical Integrity: All trades must be permanently recorded
+Performance Metrics: Store sufficient data to generate comprehensive performance reports
+Backtest Support: Structure should support historical performance analysis
+Strategy Traceability: Every trade action must be traceable to the strategy that generated it
+
+Implementation Notes
+
+Consider how to efficiently query open positions (hash map/dictionary recommended)
+Ensure immutability of historical trade records
+Plan for scalability with large numbers of trades
+Design for easy export/serialization for reporting
+Maintain a registry of strategy IDs and their descriptions for reference
+Consider linking entry and exit trades to enable paired analysis (e.g., position object that contains both entry and exit trades)

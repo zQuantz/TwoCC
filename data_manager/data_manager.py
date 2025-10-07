@@ -43,7 +43,7 @@ class DataManager:
         source: str,
         include_generated: bool = True,
         include_features: bool = True,
-        use_cache: bool = True
+        use_cache: bool = True,
     ) -> pd.DataFrame:
         """
         Get market data with optional synthetic instruments and features.
@@ -66,7 +66,7 @@ class DataManager:
             start_date=start_date,
             end_date=end_date,
             interval=interval,
-            source=source
+            source=source,
         )
 
         if data.empty:
@@ -92,7 +92,7 @@ class DataManager:
         self,
         symbol: str,
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
     ) -> pd.DataFrame:
         """
         Get data for a specific symbol from cache.
@@ -108,13 +108,19 @@ class DataManager:
         if not self._cache_valid or self._data_cache is None:
             raise ValueError("No data in cache. Call get_data() first.")
 
-        data = self._data_cache[self._data_cache['symbol'] == symbol].copy()
+        data = self._data_cache[
+            self._data_cache.index.get_level_values("symbol") == symbol
+        ].copy()
 
         if start_date:
-            data = data[data.index >= pd.Timestamp(start_date)]
+            data = data[
+                data.index.get_level_values("timestamp") >= pd.Timestamp(start_date)
+            ]
 
         if end_date:
-            data = data[data.index <= pd.Timestamp(end_date)]
+            data = data[
+                data.index.get_level_values("timestamp") <= pd.Timestamp(end_date)
+            ]
 
         return data
 
@@ -128,7 +134,7 @@ class DataManager:
         if not self._cache_valid or self._data_cache is None:
             return []
 
-        return self._data_cache['symbol'].unique().tolist()
+        return self._data_cache.index.get_level_values("symbol").unique().tolist()
 
     def get_feature_names(self) -> List[str]:
         """
@@ -165,28 +171,27 @@ class DataManager:
         """
         if not self._cache_valid or self._data_cache is None:
             return {
-                'status': 'No data loaded',
-                'symbols': 0,
-                'records': 0,
-                'date_range': None
+                "status": "No data loaded",
+                "symbols": 0,
+                "records": 0,
+                "date_range": None,
             }
 
-        symbols = self._data_cache.index.get_level_values('symbol').unique()
-        date_range = (
-            self._data_cache.index.min(),
-            self._data_cache.index.max()
-        )
+        symbols = self._data_cache.index.get_level_values("symbol").unique()
+        date_range = (self._data_cache.index.min(), self._data_cache.index.max())
 
         return {
-            'status': 'Data loaded',
-            'symbols': len(symbols),
-            'symbol_list': symbols.tolist(),
-            'records': len(self._data_cache),
-            'date_range': date_range,
-            'features': self.feature_calculator.get_feature_names()
+            "status": "Data loaded",
+            "symbols": len(symbols),
+            "symbol_list": symbols.tolist(),
+            "records": len(self._data_cache),
+            "date_range": date_range,
+            "features": self.feature_calculator.get_feature_names(),
         }
 
     def __repr__(self) -> str:
         """String representation of DataManager."""
         summary = self.get_summary()
-        return f"DataManager(symbols={summary['symbols']}, records={summary['records']})"
+        return (
+            f"DataManager(symbols={summary['symbols']}, records={summary['records']})"
+        )
